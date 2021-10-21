@@ -9,21 +9,6 @@ from inginious.frontend.pages.utils import INGIniousAdministratorPage
 import hashlib
 
 
-class AdministrationPage(INGIniousAdministratorPage):
-    """Admin page."""
-    def GET_AUTH(self):  # pylint: disable=arguments-differ
-        """ Display admin page """
-        return self.show_page()
-
-    def POST_AUTH(self):  # pylint: disable=arguments-differ
-        """ Display admin page """
-        return self.show_page()
-
-    def show_page(self):
-        """Display page"""
-        return self.template_helper.render("admin/admin_page.html")
-
-
 class AdministrationUsersPage(INGIniousAdministratorPage):
     """User Admin page."""
     def GET_AUTH(self):  # pylint: disable=arguments-differ
