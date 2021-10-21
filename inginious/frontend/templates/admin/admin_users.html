@@ -162,12 +162,13 @@
             bindings = JSON.parse(bindings.replaceAll("'",'"'));
         }
         for (const elem in bindings) {
-            var template = $('#hidden-template').html();
+            var template = $('#hidden-template').clone();
+            template = $(template).children("div.card.mb-3").first().attr('id',elem+'-template').parent().html();
             $("#binding_content").append(template);
-            $(".binding_method").text(elem);
-            $(".binding_revoke").data("username",username);
-            $(".binding_revoke").data("binding",elem);
-            $(".binding_identifier").text(bindings[elem][0]);
+            $("#"+elem+"-template .binding_revoke").data("username",username);
+            $("#"+elem+"-template .binding_revoke").data("binding",elem);
+            $("#"+elem+"-template .binding_identifier").text(bindings[elem][0]);
+            $("#"+elem+"-template .binding_method").text(elem);
         }
         $('.binding_revoke').bind("click", revoke_binding);
     });
