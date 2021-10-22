@@ -5,7 +5,7 @@
 
 from werkzeug.routing import BaseConverter
 
-from inginious.frontend.pages.admin.admin import AdministrationPage, AdministrationUsersPage, \
+from inginious.frontend.pages.admin.admin import AdministrationUsersPage, \
     AdministrationUserActionPage, AdministrationUserAddPage
 from inginious.frontend.pages.maintenance import MaintenancePage
 from inginious.frontend.pages.utils import INGIniousStaticPage

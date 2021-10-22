@@ -27,7 +27,7 @@ class AdministrationUsersPage(INGIniousAdministratorPage):
 
 class AdministrationUserActionPage(INGIniousAdministratorPage):
     """Action on User Admin page."""
-    def POST(self, *args, **kwargs):
+    def POST_AUTH(self):
         username = request.form.get("username")
         activate_hash = self.user_manager.get_user_activate_hash(username)
         action = request.form.get("action")
@@ -43,10 +43,10 @@ class AdministrationUserActionPage(INGIniousAdministratorPage):
 
 class AdministrationUserAddPage(INGIniousAdministratorPage):
     """Add User Admin page."""
-    def GET(self, *args, **kwargs):
+    def GET_AUTH(self):
         return self.template_helper.render("admin/admin_add_user.html")
 
-    def POST(self, *args, **kwargs):
+    def POST_AUTH(self):
         data = request.form  # a multidict containing POST data
         username = data["username"]
         realname = data["realname"]
