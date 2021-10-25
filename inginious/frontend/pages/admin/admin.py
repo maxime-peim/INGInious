@@ -27,6 +27,10 @@ class AdministrationUsersPage(INGIniousAdministratorPage):
 
 class AdministrationUserActionPage(INGIniousAdministratorPage):
     """Action on User Admin page."""
+    def POST(self):
+        self.POST_AUTH()
+        return redirect("/administrator/users")
+
     def POST_AUTH(self):
         username = request.form.get("username")
         activate_hash = self.user_manager.get_user_activate_hash(username)
@@ -38,28 +42,23 @@ class AdministrationUserActionPage(INGIniousAdministratorPage):
         elif action == "revoke_binding":
             binding_id = request.form.get("binding_id")
             _, _ = self.user_manager.revoke_binding(username, binding_id)
-        return redirect("/administrator/users")
-
-
-class AdministrationUserAddPage(INGIniousAdministratorPage):
-    """Add User Admin page."""
-    def GET_AUTH(self):
-        return self.template_helper.render("admin/admin_add_user.html")
-
-    def POST_AUTH(self):
-        data = request.form  # a multidict containing POST data
-        username = data["username"]
-        realname = data["realname"]
-        email = data["email"]
-        password = data["password"]
-        feedback = self.user_manager.create_user({
+        elif action == "add_user":
+            realname = request.form.get("realname")
+            email = request.form.get("email")
+            password = request.form.get("password")
+            username = request.form.get("username")
+            print("LUDOOOOOOOO")
+            print(realname)
+            print(email)
+            print(password)
+            feedback = self.user_manager.create_user({
                 "username": username,
                 "realname": realname,
                 "email": email,
                 "password": hashlib.sha512(password.encode("utf-8")).hexdigest(),
                 "bindings": {},
                 "language": "en"})
-        if feedback:
-            all_users = self.user_manager.get_users()
-            return self.template_helper.render("admin/admin_users.html", all_users=all_users, feedback=feedback)
+            if feedback:
+                all_users = self.user_manager.get_users()
+                return self.template_helper.render("admin/admin_users.html", all_users=all_users, feedback=feedback)
         return redirect("/administrator/users")

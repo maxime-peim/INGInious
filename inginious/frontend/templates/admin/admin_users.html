@@ -23,7 +23,9 @@
 
 <h2>{{ _("Users Administration") }}</h2>
 <div>
-    <a id="add_user" class="btn-sm btn btn-info" href="{{ get_homepath() }}/administrator/user_add"><i class="fa fa-user-plus"></i>{{_("Create User")}}</a>
+    <!--<a id="add_user" class="btn-sm btn btn-info" href="{{ get_homepath() }}/administrator/user_add"><i class="fa fa-user-plus"></i>{{_("Create User")}}</a>-->
+    <button type="button" data-type="single" data-toggle="modal"
+            data-target="#add_modal" class="btn btn-info add_user" title="Add"><i class="fa fa-user-plus"></i> Add user</button>
 </div>
 {% if feedback %}
     <p>{{feedback}}</p>
@@ -123,6 +125,41 @@
     </div>
 </div>
 
+<div id="add_modal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">{{ _("Add user") }} </span></h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <label class="control-label">{{ _("Username (min. 4 alphanumerical characters) :") }} </label>
+                        <input name="usrname" type="text" class="form-control">
+                    </div>
+                    <div class="col-sm-12">
+                        <label class="control-label">{{ _("Complete name :") }} </label>
+                        <input name="realname" type="text" class="form-control">
+                    </div>
+                    <div class="col-sm-12">
+                        <label class="control-label">{{ _("Email address :") }} </label>
+                        <input name="email" type="text" class="form-control">
+                    </div>
+                    <div class="col-sm-12">
+                        <label class="control-label">{{ _("Password (min. 6 characters) :") }} </label>
+                        <input name="password" type="password" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{{_("Cancel")}}</button>
+                <button type="submit" name="Add user" data-action="add_user" class="btn btn-success">{{ _("Add") | safe }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="binding_modal" class="modal fade">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -184,11 +221,23 @@
     $("button:submit").on("click",function(){
         var username=$('#username').val();
         var action = $(this).data("action");
+        var realname = "";
+        var email = "";
+        var password = "";
+        if (action == "add_user"){
+            username = $('input[name="usrname"]').val();
+            realname = $('input[name="realname"]').val();
+            email = $('input[name="email"]').val();
+            password = $('input[name="password"]').val();
+        }
         $.ajax({
           type: "POST",
           url: "{{get_homepath()}}/administrator/user_action",
           data: {
             "username":username,
+            "realname":realname,
+            "email": email,
+            "password":password,
             "action":action
           },
         }).done(function() {
