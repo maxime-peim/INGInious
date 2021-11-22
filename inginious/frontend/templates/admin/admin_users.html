@@ -194,10 +194,7 @@
     $('#binding_modal').on('show.bs.modal', function (event) {
         $('.modal-dialog #username').val($(event.relatedTarget).data('username'));
         var username=$('#username').val();
-        var bindings = $('#binding_'+username).data("bindings");
-        if (typeof(bindings) == "string"){
-            bindings = JSON.parse(bindings.replaceAll("'",'"'));
-        }
+        var bindings = get_bindings(username);
         for (const elem in bindings) {
             var template = $('#hidden-template').clone();
             template = $(template).children("div.card.mb-3").first().attr('id',elem+'-template').parent().html();
@@ -259,6 +256,21 @@
         }).done(function() {
           window.location.href = "{{get_homepath()}}/administrator/users";
         });
+    }
+    function get_bindings(username){
+        var returned_value = {};
+        $.ajax({
+          async: false,
+          type: "POST",
+          url: "{{get_homepath()}}/administrator/user_action",
+          data: {
+            "username":username,
+            "action":"get_bindings",
+          },
+        }).done(function(result) {
+            returned_value = result;
+        });
+        return returned_value;
     }
 
 </script>

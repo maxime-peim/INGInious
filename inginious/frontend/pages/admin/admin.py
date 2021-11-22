@@ -4,7 +4,7 @@
 # more information about the licensing of this file.
 
 """ Admin index page"""
-from flask import redirect, request
+from flask import redirect, request,jsonify
 from inginious.frontend.pages.utils import INGIniousAdministratorPage
 import hashlib
 
@@ -28,8 +28,7 @@ class AdministrationUsersPage(INGIniousAdministratorPage):
 class AdministrationUserActionPage(INGIniousAdministratorPage):
     """Action on User Admin page."""
     def POST(self):
-        self.POST_AUTH()
-        return redirect("/administrator/users")
+        return self.POST_AUTH()
 
     def POST_AUTH(self):
         username = request.form.get("username")
@@ -39,6 +38,9 @@ class AdministrationUserActionPage(INGIniousAdministratorPage):
             self.user_manager.activate_user(activate_hash)
         elif action == "delete":
             self.user_manager.delete_user(username)
+        elif action == "get_bindings":
+            user_info = self.user_manager.get_user_info(username)
+            return jsonify(user_info.bindings)
         elif action == "revoke_binding":
             binding_id = request.form.get("binding_id")
             _, _ = self.user_manager.revoke_binding(username, binding_id)
@@ -46,11 +48,6 @@ class AdministrationUserActionPage(INGIniousAdministratorPage):
             realname = request.form.get("realname")
             email = request.form.get("email")
             password = request.form.get("password")
-            username = request.form.get("username")
-            print("LUDOOOOOOOO")
-            print(realname)
-            print(email)
-            print(password)
             feedback = self.user_manager.create_user({
                 "username": username,
                 "realname": realname,
