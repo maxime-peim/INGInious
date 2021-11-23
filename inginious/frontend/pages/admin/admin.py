@@ -7,22 +7,42 @@
 from flask import redirect, request,jsonify
 from inginious.frontend.pages.utils import INGIniousAdministratorPage
 import hashlib
+from itertools import islice
 
 
 class AdministrationUsersPage(INGIniousAdministratorPage):
     """User Admin page."""
-    def GET_AUTH(self):  # pylint: disable=arguments-differ
+    def POST(self):
+        return self.POST_AUTH()
+
+    def GET_AUTH(self):
         """ Display admin users page """
         return self.show_page()
 
-    def POST_AUTH(self):  # pylint: disable=arguments-differ
+    def POST_AUTH(self):
         """ Display admin users page """
         return self.show_page()
 
     def show_page(self):
         """Display page"""
+
+        def _chunks(data, size):
+            it = iter(data)
+            for i in range(0, len(data), size):
+                yield {k: data[k] for k in islice(it, size)}
+
+        page = request.form.get("page")
+        page = int(page) if page is not None else 1
+
         all_users = self.user_manager.get_users()
-        return self.template_helper.render("admin/admin_users.html", all_users=all_users)
+        size_users = len(all_users)
+        user_per_page = 10
+        pages = size_users // user_per_page + (size_users % user_per_page > 0)
+        subdicts = [item for item in _chunks(all_users, user_per_page)]
+        display_users = subdicts[page-1]
+
+        return self.template_helper.render("admin/admin_users.html", all_users=display_users,
+                                           number_of_pages=pages, page_number=page)
 
 
 class AdministrationUserActionPage(INGIniousAdministratorPage):

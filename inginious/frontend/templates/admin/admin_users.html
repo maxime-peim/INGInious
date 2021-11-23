@@ -34,6 +34,7 @@
     <table class="table">
         <thead class="table-borderless">
             <tr>
+                </th>
                 <th>{{_("member")}}</th>
                 <th>{{_("username")}}</th>
                 <th>{{_("email address")}}</th>
@@ -42,6 +43,11 @@
                         <a href="#" class="btn btn-info"
                            title="{{ _('Download CSV') }}" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-table"></i></a>
                     </div>
+                </th>
+                <th>
+                    <form method="post" action="users">
+                        <input type="hidden" name="displayed_selection" value="{{displayed_selection}}">
+                     </form>
                 </th>
             </tr>
         </thead>
@@ -84,6 +90,32 @@
         {% endfor %}
         </tbody>
     </table>
+
+    <!-- Pagination -->
+<div class="d-flex justify-content-center">
+    <ul id="pagination" class="pagination-sm"></ul>
+    <form id="page_form" method="post" action="users">
+        <input type="hidden" name="displayed_selection" value="{{displayed_selection}}">
+        <input id="page_input" type="hidden" name="page" value="1">
+    </form>
+</div>
+
+<script>
+    $('#pagination').twbsPagination({
+        totalPages: {{ number_of_pages }},
+        startPage: {{ page_number }},
+        visiblePages: 5,
+
+        onPageClick: function (event, page) {
+            if(page != {{ page_number }}) {
+                $("#page_input").val(page)
+                $("#page_form").submit();
+            }
+
+        }
+    });
+</script>
+
 </div>
 
 <!-- Modals -->
