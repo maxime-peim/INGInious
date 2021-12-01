@@ -195,7 +195,9 @@ class INGIniousMainRunner:
             if message["type"] == "run_student":
                 # copy the dict manually to ensure the correctness of the message
                 self.running_student_container[message["socket_id"]] = addr
-                await self.write_stdout({"type": "run_student", "environment": message["environment"],
+                await self.write_stdout({"type": "run_student",
+                                         "environment_type": message["environment_type"],
+                                         "environment_name": message["environment_name"],
                                          "time_limit": message["time_limit"],
                                          "hard_time_limit": message["hard_time_limit"],
                                          "memory_limit": message["memory_limit"],

@@ -16,7 +16,7 @@ import zmq.asyncio
 from inginious_container_api.utils import read_block
 
 
-def run_student(cmd, container=None,
+def run_student(cmd, environment_type=None, container=None,
         time_limit=0, hard_time_limit=0,
         memory_limit=0, share_network=False,
         working_dir=None, stdin=None, stdout=None, stderr=None,
@@ -72,7 +72,7 @@ def run_student(cmd, container=None,
     try:
 
         server, socket_id, socket_path, path = create_student_socket(both_same_kernel)
-        zmq_socket, student_container_id = start_student_container(container, time_limit, hard_time_limit, memory_limit, share_network, socket_id, ssh, start_student_as_root)
+        zmq_socket, student_container_id = start_student_container(environment_type, container, time_limit, hard_time_limit, memory_limit, share_network, socket_id, ssh, start_student_as_root)
         connection = send_initial_command(socket_id, server, stdin, stdout, stderr, zmq_socket, student_container_id, cmd, teardown_script, working_dir, ssh, user, both_same_kernel)
         allow_to_send_signals(signal_handler_callback, connection, student_container_id, both_same_kernel)
         handle_ssh(ssh, connection, student_container_id, both_same_kernel)
@@ -83,7 +83,7 @@ def run_student(cmd, container=None,
         return 254
 
 
-def run_student_simple(cmd, cmd_input=None, container=None,
+def run_student_simple(cmd, cmd_input=None, environment_type=None, container=None,
         time_limit=0, hard_time_limit=0,
         memory_limit=0, share_network=False,
         working_dir=None, stdout_err_fuse=False, text="utf-8"):
@@ -126,7 +126,7 @@ def run_student_simple(cmd, cmd_input=None, container=None,
     else:
         stderr_r, stderr_w = os.pipe()
 
-    retval = run_student(cmd, container, time_limit, hard_time_limit, memory_limit,
+    retval = run_student(cmd, environment_type, container, time_limit, hard_time_limit, memory_limit,
                          share_network, working_dir, stdin, stdout_w, stderr_w)
 
     preprocess_out = (lambda x: x.decode(text)) if text is not False else (lambda x: x)
@@ -187,12 +187,14 @@ def create_student_socket(both_dockers):
         return None, socket_id, socket_path, path
 
 
-def start_student_container(container, time_limit, hard_time_limit, memory_limit, share_network, socket_id, ssh, run_as_root):
+def start_student_container(environment_type, environment_name, time_limit, hard_time_limit, memory_limit, share_network, socket_id, ssh, run_as_root):
     """ Ask the docker agent to create the student container """
     context = zmq.Context()
     zmq_socket = context.socket(zmq.REQ)
     zmq_socket.connect("ipc:///sockets/main.sock")
-    zmq_socket.send(msgpack.dumps({"type": "run_student", "environment": container,
+    zmq_socket.send(msgpack.dumps({"type": "run_student", 
+                                   "environment_type": environment_type,
+                                   "environment_name": environment_name,
                                    "time_limit": time_limit, "hard_time_limit": hard_time_limit,
                                    "memory_limit": memory_limit, "share_network": share_network,
                                    "socket_id": socket_id, "ssh": ssh, "run_as_root": run_as_root},

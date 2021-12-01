@@ -425,14 +425,14 @@ class DockerAgent(Agent):
         self._create_safe_task(self.handle_running_container(out, future_results=future_results))
         await self._timeout_watcher.register_container(out.container_id, out.time_limit, out.hard_time_limit)
 
-    async def create_student_container(self, parent_info, socket_id, environment_name,
+    async def create_student_container(self, parent_info, socket_id, environment_type, environment_name,
                                        memory_limit, time_limit, hard_time_limit, share_network, write_stream, ssh, run_as_root):
         """
         Creates a new student container.
         :param write_stream: stream on which to write the return value of the container (with a correctly formatted msgpack message)
         """
         try:
-            environment_type = parent_info.environment_type
+            environment_type = environment_type or parent_info.environment_type
             self._logger.debug("Starting new student container... %s/%s %s %s %s", environment_type, environment_name,
                                memory_limit, time_limit, hard_time_limit)
 
@@ -445,9 +445,16 @@ class DockerAgent(Agent):
 
             environment = self._containers[environment_type][environment_name]["id"]
 
-            if run_as_root:
-                runtime_name = {k for k in self._runtimes if self._runtimes[k].run_as_root}.pop()
-                runtime = self._runtimes[runtime_name].runtime
+            #if run_as_root:
+            #    runtime_name = {k for k in self._runtimes if self._runtimes[k].run_as_root}.pop()
+            #    runtime = self._runtimes[runtime_name].runtime
+
+            if run_as_root and not self._runtimes[environment_type].run_as_root:
+                self._logger.warning("Student container asked for root privileges, but it is not authorized on %s environment.",
+                                     environment_type)
+                await self._write_to_container_stdin(write_stream, {"type": "run_student_retval", "retval": 254,
+                                                                    "socket_id": socket_id})
+                return
             else:
                 runtime = self._containers[environment_type][environment_name]["runtime"]
 
@@ -640,8 +647,10 @@ class DockerAgent(Agent):
                     try:
                         self._logger.debug("Received msg %s from container %s", msg["type"], info.container_id)
                         if msg["type"] == "run_student":
+                            self._logger.debug(msg)
                             # start a new student container
-                            environment = msg["environment"] or info.environment_name
+                            environment_type = msg["environment_type"] or info.environment_type
+                            environment_name = msg["environment_name"] or info.environment_name
                             memory_limit = min(msg["memory_limit"] or info.mem_limit, info.mem_limit)
                             time_limit = min(msg["time_limit"] or info.time_limit, info.time_limit)
                             hard_time_limit = min(msg["hard_time_limit"] or info.hard_time_limit, info.hard_time_limit)
@@ -655,7 +664,7 @@ class DockerAgent(Agent):
                                     self._create_safe_task(self.handle_job_closing(info.container_id, -1, manual_feedback="ssh for student requires to allow ssh and internet access in the task environment configuration tab!"))
                             else:
                                 self._create_safe_task(
-                                    self.create_student_container(info, socket_id, environment, memory_limit,
+                                    self.create_student_container(info, socket_id, environment_type, environment_name, memory_limit,
                                                                   time_limit, hard_time_limit, share_network,
                                                                   write_stream, ssh, run_as_root))
 
