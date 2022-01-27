@@ -564,6 +564,7 @@ class DockerAgent(Agent):
                 while self.buffer_has_data(buffer):
                     buffer, msg = self.read_buffer(buffer)
                     self._logger.debug("Received msg %s from container %s", msg["type"], info.container_id)
+                    self._logger.debug(msg)
                     if msg["type"] == "ssh_student":
                         info_student = None
                         if len(self._student_containers_running) > 0 and msg[
@@ -646,8 +647,8 @@ class DockerAgent(Agent):
                     buffer, msg = self.read_buffer(buffer)
                     try:
                         self._logger.debug("Received msg %s from container %s", msg["type"], info.container_id)
+                        self._logger.debug(msg)
                         if msg["type"] == "run_student":
-                            self._logger.debug(msg)
                             # start a new student container
                             environment_type = msg["environment_type"] or info.environment_type
                             environment_name = msg["environment_name"] or info.environment_name
@@ -683,7 +684,8 @@ class DockerAgent(Agent):
                                      "student_container_id"],
                                  "working_dir": msg["working_dir"],
                                  "ssh": msg["ssh"],
-                                 "user": msg["user"]})
+                                 "user": msg["user"],
+                                 "script_as_root": msg["script_as_root"]})
 
                             if msg["ssh"]:
                                 await self.start_ssh(student_containers_streams[msg["student_container_id"]][0],

@@ -27,9 +27,10 @@ parser.add_argument('--setup-script', help="Specify, using string format, the co
                                            "In the case of script files, it is recommended to put them in the student/scripts directory since this specific subdirectory will be isolated from the student", type=str, default="")
 parser.add_argument('--teardown-script', help="Specify, using string format, the commands to run when the student leaves the ssh connection, just before killing the student container. Example: \"python3 student/scripts/teardown_script.py\". "
                                               "In the case of script files, it is recommended to put them in the student/scripts directory since this specific subdirectory will be isolated from the student", type=str, default="")
+parser.add_argument('--script-as-root', help="Tries to execute setup and teardown script as root.", action='store_true')
 
 args = parser.parse_args()
 
 exit(ssh_student.ssh_student(setup_script=args.setup_script, environment_type=args.environment_type, container=args.container, time_limit=args.time,
                              hard_time_limit=args.hard_time, memory_limit=args.memory,
-                             run_as_root=args.run_as_root, teardown_script=args.teardown_script))
+                             run_as_root=args.run_as_root, teardown_script=args.teardown_script, script_as_root=args.script_as_root))

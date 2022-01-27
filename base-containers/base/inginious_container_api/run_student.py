@@ -20,7 +20,8 @@ def run_student(cmd, environment_type=None, container=None,
         time_limit=0, hard_time_limit=0,
         memory_limit=0, share_network=False,
         working_dir=None, stdin=None, stdout=None, stderr=None,
-        signal_handler_callback=None, ssh=False, start_student_as_root=False, teardown_script=""):
+        signal_handler_callback=None, ssh=False, start_student_as_root=False,
+        teardown_script="", script_as_root=False):
     """
     Run a command inside a student container
 
@@ -70,10 +71,9 @@ def run_student(cmd, environment_type=None, container=None,
         stderr = open(os.devnull, 'rb').fileno()
 
     try:
-
         server, socket_id, socket_path, path = create_student_socket(both_same_kernel)
         zmq_socket, student_container_id = start_student_container(environment_type, container, time_limit, hard_time_limit, memory_limit, share_network, socket_id, ssh, start_student_as_root)
-        connection = send_initial_command(socket_id, server, stdin, stdout, stderr, zmq_socket, student_container_id, cmd, teardown_script, working_dir, ssh, user, both_same_kernel)
+        connection = send_initial_command(socket_id, server, stdin, stdout, stderr, zmq_socket, student_container_id, cmd, teardown_script, working_dir, ssh, user, both_same_kernel, script_as_root)
         allow_to_send_signals(signal_handler_callback, connection, student_container_id, both_same_kernel)
         handle_ssh(ssh, connection, student_container_id, both_same_kernel)
         message = wait_until_finished(both_same_kernel, zmq_socket, stdin, stdout, stderr, student_container_id)
@@ -206,7 +206,7 @@ def start_student_container(environment_type, environment_name, time_limit, hard
     return zmq_socket, student_container_id
 
 
-def send_initial_command(socket_id, server, stdin, stdout, stderr, zmq_socket, student_container_id, cmd, teardown_script, working_dir, ssh, user, both_dockers):
+def send_initial_command(socket_id, server, stdin, stdout, stderr, zmq_socket, student_container_id, cmd, teardown_script, working_dir, ssh, user, both_dockers, script_as_root):
     """ Send the commands (aka: student code) to be run in the student container """
     if both_dockers:
         # Serve one and only one connection
@@ -220,14 +220,14 @@ def send_initial_command(socket_id, server, stdin, stdout, stderr, zmq_socket, s
         connection.sendmsg([b'S'], [(socket.SOL_SOCKET, socket.SCM_RIGHTS, array.array("i", [stdin, stdout, stderr]))])
         connection.send(msgpack.dumps(
             {"type": "run_student_command", "student_container_id": student_container_id, "command": cmd,
-             "teardown_script": teardown_script, "working_dir": working_dir, "ssh": ssh, "user": user}))
+             "teardown_script": teardown_script, "working_dir": working_dir, "ssh": ssh, "user": user, "script_as_root": script_as_root}))
         return connection
     else:
         # Send the command to the student_container via the agent
         zmq_socket.send(msgpack.dumps(
             {"type": "run_student_init", "socket_id": socket_id, "student_container_id": student_container_id, "command": cmd,
              "teardown_script": teardown_script, "working_dir": working_dir,
-             "ssh": ssh, "user": user}, use_bin_type=True))
+             "ssh": ssh, "user": user, "script_as_root": script_as_root}, use_bin_type=True))
         zmq_socket.recv() #ignore answer
         return None
 

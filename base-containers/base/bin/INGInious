@@ -214,7 +214,8 @@ class INGIniousMainRunner:
                                          "teardown_script": message["teardown_script"],
                                          "working_dir": message["working_dir"],
                                          "ssh": message["ssh"],
-                                         "user": message["user"]
+                                         "user": message["user"],
+                                         "script_as_root": message["script_as_root"]
                                          })
                 await self.intern.send_multipart([addr, b'', msgpack.dumps({"type": "dummy_message"}, use_bin_type=True)])  # ping pong answer
                 return False

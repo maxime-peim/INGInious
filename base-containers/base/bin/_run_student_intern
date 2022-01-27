@@ -41,6 +41,7 @@ socket_unix, fds, start_cmd = receive_initial_command(both_same_kernel, containe
 # Check security
 student_container_id = start_cmd["student_container_id"]
 user = start_cmd["user"]  # Know if you are worker (on docker) or root (on Kata)
+script_as_root = start_cmd["script_as_root"]
 if user == "root" and shared_kernel:
     logger.info("You can not run as root on a runtime with shared_kernel such as docker runtime")
     exit(251)
@@ -58,7 +59,7 @@ logger.info("student container started and received initial command")
 
 # Start the process
 os.chdir(start_cmd["working_dir"])
-set_limits = lambda: set_limits_user(user)  # To know if the command should be executed as root or worker
+set_limits = lambda: set_limits_user(user if not script_as_root else "root")  # To know if the command should be executed as root or worker
 if start_cmd["command"] is None or start_cmd["command"] == "":  # Avoid to run an empty command
     start_cmd["command"] = "echo 'info: student container started with no command set' "
 
