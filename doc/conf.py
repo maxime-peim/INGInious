@@ -36,7 +36,8 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx_tabs.tabs',
-    'IPython.sphinxext.ipython_console_highlighting'
+    'IPython.sphinxext.ipython_console_highlighting',
+    'sphinx_autodoc_typehints'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -53,7 +54,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'INGInious'
-copyright = '2014-2021, Université catholique de Louvain'
+copyright = '2014-2022, Université catholique de Louvain'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
