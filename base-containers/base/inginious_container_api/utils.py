@@ -31,7 +31,7 @@ def set_executable(filename):
     os.chmod(filename, st.st_mode | stat.S_IEXEC)
 
 
-def execute_process(args, stdin_string="", internal_command=False, user="worker"):
+def execute_process(args, stdin_string="", internal_command=False, user="worker", cwd=None):
     if not isinstance(args, list):
         args = [args]
     set_limits = (lambda: set_limits_user(user))
@@ -42,10 +42,10 @@ def execute_process(args, stdin_string="", internal_command=False, user="worker"
     stdout = tempfile.TemporaryFile()
     stderr = tempfile.TemporaryFile()
     if internal_command:
-        pr = subprocess.Popen(args, stdin=stdin, stdout=stdout, stderr=stderr)
+        pr = subprocess.Popen(args, cwd=cwd, stdin=stdin, stdout=stdout, stderr=stderr)
     else:
         set_executable(args[0])
-        pr = subprocess.Popen(args, preexec_fn=set_limits, stdin=stdin, stdout=stdout, stderr=stderr)
+        pr = subprocess.Popen(args, preexec_fn=set_limits, cwd=cwd, stdin=stdin, stdout=stdout, stderr=stderr)
     pr.wait()
     stdout.seek(0)
     stderr.seek(0)
