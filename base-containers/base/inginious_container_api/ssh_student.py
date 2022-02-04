@@ -7,7 +7,7 @@ import inginious_container_api.run_student
 
 
 # Simply runs run_student with no cmd and ssh set to True
-def ssh_student(setup_script=None, memory_limit=0, hard_time_limit=0, time_limit=0, environment_type=None, container=None, run_as_root=False, teardown_script=None, script_as_root=False):
+def ssh_student(setup_script=None, memory_limit=0, hard_time_limit=0, time_limit=0, environment_type=None, container=None, run_as_root=False, teardown_script=None, script_as_root=False, user="worker"):
     """
     If a command is specified, runs it in a student container.
     Then gives ssh access to that container to the student. The student has 2 min to connect (copy paste the ssh command shown) otherwise it will timeout.
@@ -32,5 +32,5 @@ def ssh_student(setup_script=None, memory_limit=0, hard_time_limit=0, time_limit
     """
     return inginious_container_api.run_student.run_student(cmd=setup_script, environment_type=environment_type, container=container, time_limit=time_limit,
                 hard_time_limit=hard_time_limit, memory_limit=memory_limit,
-                stdin=sys.stdin.fileno(), stdout=sys.stdout.fileno(), stderr=sys.stderr.fileno(),
+                stdin=sys.stdin.fileno(), stdout=sys.stdout.fileno(), stderr=sys.stderr.fileno(), user=user,
                 signal_handler_callback=inginious_container_api.run_student._hack_signals, ssh=True, start_student_as_root=run_as_root, teardown_script=teardown_script, script_as_root=script_as_root)

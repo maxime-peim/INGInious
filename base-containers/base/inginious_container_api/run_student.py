@@ -21,7 +21,7 @@ def run_student(cmd, environment_type=None, container=None,
         memory_limit=0, share_network=False,
         working_dir=None, stdin=None, stdout=None, stderr=None,
         signal_handler_callback=None, ssh=False, start_student_as_root=False,
-        teardown_script="", script_as_root=False):
+        teardown_script="", script_as_root=False, user="worker"):
     """
     Run a command inside a student container
 
@@ -57,9 +57,11 @@ def run_student(cmd, environment_type=None, container=None,
     """
 
     #  Checking runtimes
+    # TODO: remove start_student_as_root from parameter
+    start_student_as_root = user == "root"
     shared_kernel = os.path.exists("/.__input/__shared_kernel")  # shared_kernal: boolean, True when this grading_container is running on a runtime with shared_kernel.
     both_same_kernel = shared_kernel and not start_student_as_root  # both_same_kernel: boolean, True when both grading_container and student_container will be running on a shared kernel runtime.
-    user = "root" if start_student_as_root else "worker"  #start_student_as_root: boolean, True when we want to start a student_container and give root privilege.
+    # user = "root" if start_student_as_root else "worker"  #start_student_as_root: boolean, True when we want to start a student_container and give root privilege.
     #  Basic files management
     if working_dir is None:
         working_dir = os.getcwd()
