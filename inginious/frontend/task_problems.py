@@ -35,13 +35,13 @@ class DisplayableProblem(Problem, metaclass=ABCMeta):
 
     @classmethod
     @abstractmethod
-    def show_editbox(cls, template_helper, key, language, course, taskid):
+    def show_editbox(cls, template_helper, key, language, *args, **kwargs):
         """ get the edit box html for this problem """
         pass
 
     @classmethod
     @abstractmethod
-    def show_editbox_templates(cls, template_helper, key, language, course, taskid):
+    def show_editbox_templates(cls, template_helper, key, language, *args, **kwargs):
         return ""
 
 
@@ -67,11 +67,11 @@ class DisplayableCodeProblem(CodeProblem, DisplayableProblem):
                                       default=self._default)
 
     @classmethod
-    def show_editbox(cls, template_helper, key, language, course, taskid):
+    def show_editbox(cls, template_helper, key, language, *args, **kwargs):
         return template_helper.render("course_admin/subproblems/code.html", key=key, multiline=True)
 
     @classmethod
-    def show_editbox_templates(cls, template_helper, key, language, course, taskid):
+    def show_editbox_templates(cls, template_helper, key, language, *args, **kwargs):
         return ""
 
 
@@ -96,11 +96,11 @@ class DisplayableCodeSingleLineProblem(CodeSingleLineProblem, DisplayableProblem
                                       maxChars=0, optional=self._optional, default=self._default)
 
     @classmethod
-    def show_editbox(cls, template_helper, key, language, course, taskid):
+    def show_editbox(cls, template_helper, key, language, *args, **kwargs):
         return template_helper.render("course_admin/subproblems/code.html", key=key, multiline=False)
 
     @classmethod
-    def show_editbox_templates(cls, template_helper, key, language, course, taskid):
+    def show_editbox_templates(cls, template_helper, key, language, *args, **kwargs):
         return ""
 
 
@@ -123,7 +123,7 @@ class DisplayableFileProblem(FileProblem, DisplayableProblem):
         return input_data
 
     @classmethod
-    def show_editbox(cls, template_helper, key, language, course, taskid):
+    def show_editbox(cls, template_helper, key, language, *args, **kwargs):
         return template_helper.render("course_admin/subproblems/file.html", key=key)
 
     def show_input(self, template_helper, language, seed):
@@ -134,7 +134,7 @@ class DisplayableFileProblem(FileProblem, DisplayableProblem):
                                       max_size=self._max_size, allowed_exts=self._allowed_exts)
 
     @classmethod
-    def show_editbox_templates(cls, template_helper, key, language, course, taskid):
+    def show_editbox_templates(cls, template_helper, key, language, *args, **kwargs):
         return ""
 
 
@@ -200,11 +200,11 @@ class DisplayableMultipleChoiceProblem(MultipleChoiceProblem, DisplayableProblem
                                       )
 
     @classmethod
-    def show_editbox(cls, template_helper, key, language, course, taskid):
+    def show_editbox(cls, template_helper, key, language, *args, **kwargs):
         return template_helper.render("course_admin/subproblems/multiple_choice.html", key=key)
 
     @classmethod
-    def show_editbox_templates(cls, template_helper, key, language, course, taskid):
+    def show_editbox_templates(cls, template_helper, key, language, *args, **kwargs):
         return template_helper.render("course_admin/subproblems/multiple_choice_templates.html", key=key)
 
 
@@ -225,9 +225,9 @@ class DisplayableMatchProblem(MatchProblem, DisplayableProblem):
         return template_helper.render("tasks/match.html", inputId=self.get_id(), header=header)
 
     @classmethod
-    def show_editbox(cls, template_helper, key, language, course, taskid):
+    def show_editbox(cls, template_helper, key, language, *args, **kwargs):
         return template_helper.render("course_admin/subproblems/match.html", key=key)
 
     @classmethod
-    def show_editbox_templates(cls, template_helper, key, language, course, taskid):
+    def show_editbox_templates(cls, template_helper, key, language, *args, **kwargs):
         return ""
