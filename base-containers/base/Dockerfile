@@ -13,7 +13,7 @@ RUN     dnf clean metadata && \
         dnf -y install epel-release && \
         dnf -y upgrade && \
         dnf -y install python38 python38-pip python38-devel zip unzip tar sed openssh-server openssl bind-utils iproute file jq procps-ng && \
-        pip3.8 install msgpack pyzmq jinja2 PyYAML timeout-decorator ipython mypy && \
+        pip3.8 install msgpack pyzmq "jinja2<3.1" PyYAML timeout-decorator ipython mypy && \
         dnf clean all
 
 # Allow to run commands
