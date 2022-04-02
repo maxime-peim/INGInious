@@ -14,7 +14,7 @@ General overview
 The administration page gives you several global list views :
 
 - All the tasks of a course, with  the number of students who viewed the
-  at least one time, who tried and the number of tries, as well as the
+  task at least one time, who tried and the number of tries, as well as the
   number of students who succeded the task. This view is the first
   displayed when you click on "Manage" to enter the administration.
 - All the students/groups of a course, with the number of tasks tried and done,

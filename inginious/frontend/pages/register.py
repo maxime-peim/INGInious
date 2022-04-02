@@ -16,6 +16,7 @@ from flask_mail import Message
 from werkzeug.exceptions import Forbidden
 from inginious.frontend.pages.utils import INGIniousPage
 from inginious.frontend.flask.mail import mail
+from inginious.frontend.user_manager import UserManager
 
 
 class RegistrationPage(INGIniousPage):
@@ -34,7 +35,8 @@ class RegistrationPage(INGIniousPage):
         data = flask.request.args
 
         if "activate" in data:
-            msg, error = self.activate_user(data)
+            error = self.user_manager.activate_user(data["activate"])
+            msg = _("Invalid activation hash.") if error else _("User successfully activated.")
         elif "reset" in data:
             msg, error, reset = self.get_reset_data(data)
 
@@ -55,33 +57,18 @@ class RegistrationPage(INGIniousPage):
 
         return msg, error, reset
 
-    def activate_user(self, data):
-        """ Activates user """
-        error = False
-        user = self.database.users.find_one_and_update({"activate": data["activate"]}, {"$unset": {"activate": True}})
-        if user is None:
-            error = True
-            msg = _("Invalid activation hash.")
-        else:
-            msg = _("You are now activated. You can proceed to login.")
-
-        return msg, error
-
     def register_user(self, data):
         """ Parses input and register user """
         error = False
         msg = ""
 
-        email_re = re.compile(
-            r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*"  # dot-atom
-            r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-011\013\014\016-\177])*"'  # quoted-string
-            r')@(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?$', re.IGNORECASE)  # domain
+        email = UserManager.sanitize_email(data["email"])
 
         # Check input format
         if re.match(r"^[-_|~0-9A-Z]{4,}$", data["username"], re.IGNORECASE) is None:
             error = True
             msg = _("Invalid username format.")
-        elif email_re.match(data["email"]) is None:
+        elif email is None:
             error = True
             msg = _("Invalid email format.")
         elif len(data["passwd"]) < 6:
@@ -96,7 +83,7 @@ class RegistrationPage(INGIniousPage):
 
         if not error:
             existing_user = self.database.users.find_one(
-                {"$or": [{"username": data["username"]}, {"email": data["email"]}]})
+                {"$or": [{"username": data["username"]}, {"email": email}]})
             if existing_user is not None:
                 error = True
                 if existing_user["username"] == data["username"]:
@@ -104,11 +91,11 @@ class RegistrationPage(INGIniousPage):
                 else:
                     msg = _("This email address is already in use !")
             else:
-                passwd_hash = hashlib.sha512(data["passwd"].encode("utf-8")).hexdigest()
-                activate_hash = hashlib.sha512(str(random.getrandbits(256)).encode("utf-8")).hexdigest()
+                passwd_hash = UserManager.hash_password(data["passwd"])
+                activate_hash = UserManager.hash_password(str(random.getrandbits(256)))
                 self.database.users.insert_one({"username": data["username"],
                                                 "realname": data["realname"],
-                                                "email": data["email"],
+                                                "email": email,
                                                 "password": passwd_hash,
                                                 "activate": activate_hash,
                                                 "bindings": {},
@@ -122,7 +109,7 @@ class RegistrationPage(INGIniousPage):
 To activate your account, please click on the following link :
 """) + flask.request.url_root + "register?activate=" + activate_hash
 
-                    message = Message(recipients=[(data["realname"], data["email"])],
+                    message = Message(recipients=[(data["realname"], email)],
                                       subject=subject,
                                       body=body)
                     mail.send(message)
@@ -151,7 +138,7 @@ To activate your account, please click on the following link :
             msg = _("Invalid email format.")
 
         if not error:
-            reset_hash = hashlib.sha512(str(random.getrandbits(256)).encode("utf-8")).hexdigest()
+            reset_hash = UserManager.hash_password(str(random.getrandbits(256)))
             user = self.database.users.find_one_and_update({"email": data["recovery_email"]},
                                                            {"$set": {"reset": reset_hash}})
             if user is None:
@@ -193,7 +180,7 @@ Someone (probably you) asked to reset your INGInious password. If this was you, 
             msg = _("Passwords don't match !")
 
         if not error:
-            passwd_hash = hashlib.sha512(data["passwd"].encode("utf-8")).hexdigest()
+            passwd_hash = UserManager.hash_password(data["passwd"])
             user = self.database.users.find_one_and_update({"reset": data["reset"]},
                                                            {"$set": {"password": passwd_hash},
                                                             "$unset": {"reset": True, "activate": True}})
